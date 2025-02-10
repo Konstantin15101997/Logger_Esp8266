@@ -26,6 +26,16 @@ bool status_signal;
 #define MY_PERIOD 300000  // период в мс
 uint32_t tmr1;         // переменная таймера
 
+typedef struct synhron {
+  int y;
+} synhron;
+synhron connect;
+
+void OnDataRecv(uint8_t *mac, uint8_t *data, uint8_t len) {
+  memcpy(&connect, data, sizeof(connect));
+  Serial.println(connect.y);
+}
+
 // Проверка отправки данных
 void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus) {
   if (sendStatus == 0){
@@ -79,36 +89,36 @@ void setup() {
   esp_now_register_send_cb(OnDataSent);
   
   esp_now_add_peer(broadcastAddress1, ESP_NOW_ROLE_SLAVE, 1, NULL, 0);
-  tmr1=millis();
+  
+  esp_now_register_recv_cb(OnDataRecv);
+  //tmr1=millis();
 }
 
 void loop() {
-  
+ 
+  sensors_event_t humidity, temp;
+  aht.getEvent(&humidity, &temp);
 
-  while (millis()-tmr1 <= MY_PERIOD){
-    
-    sensors_event_t humidity, temp;
-    aht.getEvent(&humidity, &temp);
-
-    if (status_AHT20 == 1){
-      Data_climate.temperature_esp8266=0;
-      Data_climate.humidity_esp8266=0;
-    }else{
-      Data_climate.temperature_esp8266=temp.temperature;
-      Data_climate.humidity_esp8266=humidity.relative_humidity;
-    }
-
-    if (status_BMP280 == 1){
-      Data_climate.pressure_esp8266=0;
-    }else{
-      Data_climate.pressure_esp8266=bmp.readPressure();
-    }
-
-    esp_now_send(0, (uint8_t *) &Data_climate, sizeof(Data_climate));
+  if (status_AHT20 == 1){
+    Data_climate.temperature_esp8266=0;
+    Data_climate.humidity_esp8266=0;
+  }else{
+    Data_climate.temperature_esp8266=temp.temperature;
+    Data_climate.humidity_esp8266=humidity.relative_humidity;
   }
 
-  Serial.println("Сплю");
-  ESP.deepSleep(3300e6); //3300 секунд
+  if (status_BMP280 == 1){
+    Data_climate.pressure_esp8266=0;
+  }else{
+    Data_climate.pressure_esp8266=bmp.readPressure();
+  }
+
+  esp_now_send(0, (uint8_t *) &Data_climate, sizeof(Data_climate));
+
+  if (connect.y==1){
+    Serial.println("СПЛЮ");
+    ESP.deepSleep(3480e6);  //58 минут
+  }
 }
 
 
