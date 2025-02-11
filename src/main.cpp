@@ -1,5 +1,3 @@
-//Мой MAC адресс 2C:F4:32:13:A7:87
-
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AHTX0.h> //Влажность и температура 
@@ -97,30 +95,29 @@ void setup() {
 }
 
 void loop() {
- 
-  sensors_event_t humidity, temp;
-  aht.getEvent(&humidity, &temp);
+  while (millis()-tmr1 <= MY_PERIOD){
+    sensors_event_t humidity, temp;
+    aht.getEvent(&humidity, &temp);
 
-  if (status_AHT20 == 1){
-    Data_climate.temperature_esp8266=0;
-    Data_climate.humidity_esp8266=0;
-  }else{
-    Data_climate.temperature_esp8266=temp.temperature;
-    Data_climate.humidity_esp8266=humidity.relative_humidity;
+    if (status_AHT20 == 1){
+      Data_climate.temperature_esp8266=0;
+      Data_climate.humidity_esp8266=0;
+    }else{
+      Data_climate.temperature_esp8266=temp.temperature;
+      Data_climate.humidity_esp8266=humidity.relative_humidity;
+    }
+
+    if (status_BMP280 == 1){
+      Data_climate.pressure_esp8266=0;
+    }else{
+      Data_climate.pressure_esp8266=bmp.readPressure();
+    }
+
+    esp_now_send(0, (uint8_t *) &Data_climate, sizeof(Data_climate));
   }
 
-  if (status_BMP280 == 1){
-    Data_climate.pressure_esp8266=0;
-  }else{
-    Data_climate.pressure_esp8266=bmp.readPressure();
-  }
-
-  esp_now_send(0, (uint8_t *) &Data_climate, sizeof(Data_climate));
-
-  if (connect.y==1){
-    Serial.println("СПЛЮ");
-    ESP.deepSleep(3480e6);  //58 минут
-  }
+    ESP.deepSleep(3300e6);  //55 минут
+  
 }
 
 
