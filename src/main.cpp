@@ -1,3 +1,5 @@
+//Мой MAC адресс 2C:F4:32:13:A7:87
+
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AHTX0.h> //Влажность и температура 
