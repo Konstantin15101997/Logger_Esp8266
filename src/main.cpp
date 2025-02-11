@@ -91,7 +91,7 @@ void setup() {
   esp_now_add_peer(broadcastAddress1, ESP_NOW_ROLE_SLAVE, 1, NULL, 0);
   
   esp_now_register_recv_cb(OnDataRecv);
-  //tmr1=millis();
+  tmr1=millis();
 }
 
 void loop() {
